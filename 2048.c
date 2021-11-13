@@ -213,12 +213,10 @@ int main(void) {
 	}
 
     create_random_tile(game_array, 2);
-    create_random_tile(game_array, 2);
-    
     // main game loop
     while (1) {
 		if (is_full(game_array)) break;
-		
+		create_random_tile(game_array, 2);
 		print_array(game_array);
 		
 		char key = getchar();
