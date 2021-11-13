@@ -82,6 +82,63 @@ void create_random_tile(int** game_array, int value) {
 	game_array[ry][rx] = value;
 }
 
+void move_all_left(int* a, int n) {
+	int last = 0;
+	for (int i = 0; i < n; i++) {
+		if (a[i] == 0) {
+			continue;
+		}
+		if (a[i] != 0) {
+			a[last] = a[i];
+			if (i != last) {
+				a[i] = 0;
+			}
+			last++;
+		}
+	}
+}
+
+void combine(int* a, int n) {
+	for (int i = 0; i < n; i++) {
+		if (i < n) {
+			if (a[i] == a[i+1]) {
+				a[i] = a[i] * 2;
+				a[i+1] = 0;
+			}
+		}
+	}
+}
+
+void move_single_array(int* a, int n) {
+	move_left(a, n);
+	combine(a, n);
+	move_left(a, n);
+}
+
+void move(int** game_array, enum movement dir) {
+	int* arr;
+	if (dir == DOWN || dir == UP) {
+		int* arr = malloc(y_size * sizeof(int));
+	} else {
+		int* arr = malloc(x_size * sizeof(int));
+	}
+	if (!arr) exit(EXIT_FAILURE);
+	
+	
+	if (dir == DOWN) {
+		
+	}
+	if (dir == UP) {
+		printf("up\n");
+	}
+	if (dir == LEFT) {
+		printf("left\n");
+	}
+	if (dir == RIGHT) {
+		printf("right\n");
+	}
+}
+
 int** create_game_array() {
 	int** game_array;
 	game_array = malloc(y_size * sizeof(int *));
@@ -122,10 +179,27 @@ int main(void) {
     create_random_tile(game_array, 2);
     
     // main game loop
-    /*while (1) {
+    while (1) {
 		if (is_full(game_array)) break;
+		char key = getchar();
+		switch (key) {
+			case 'w':
+				move(game_array, UP);
+				break;
+			case 'a':
+				move(game_array, LEFT);
+				break;
+			case 's':
+				move(game_array, DOWN);
+				break;
+			case 'd':
+				move(game_array, RIGHT);
+				break;
+			default:
+				break;
+		}
 		
-	}*/
+	}
 
     print_array(game_array);
     for (int j = 0; j < y_size; j++) {
