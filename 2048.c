@@ -7,6 +7,13 @@
 int x_size = 4;
 int y_size = 4;
 
+enum movement {
+	LEFT,
+	RIGHT,
+	UP,
+	DOWN
+};
+
 void print_array(int** game_array) {
 	printf("╔═══");
 	for (int i = 0; i < x_size-1; i++) {
@@ -113,6 +120,12 @@ int main(void) {
 
     create_random_tile(game_array, 2);
     create_random_tile(game_array, 2);
+    
+    // main game loop
+    /*while (1) {
+		if (is_full(game_array)) break;
+		
+	}*/
 
     print_array(game_array);
     for (int j = 0; j < y_size; j++) {
