@@ -8,7 +8,11 @@ int x_size = 4;
 int y_size = 4;
 
 void print_array(int** game_array) {
-	printf("╔═══╦═══╦═══╦═══╗\n");
+	printf("╔═══");
+	for (int i = 0; i < x_size-1; i++) {
+		printf("╦═══");
+	}
+	printf("╗\n");
 	for (int j = 0; j < y_size; j++) {
 		printf("║");
 		for (int i = 0; i < x_size; i++) {
@@ -27,9 +31,19 @@ void print_array(int** game_array) {
 			}
 		}
 		printf("║\n");
-		if (j != y_size-1) printf("╠═══╬═══╬═══╬═══╣\n");
+		if (j != y_size-1) {
+			printf("╠═══");
+			for (int i = 0; i < x_size-1; i++) {
+				printf("╬═══");
+			}
+			printf("╣\n");
+		}
 	}
-	printf("╚═══╩═══╩═══╩═══╝\n");
+	printf("╚═══");
+	for (int i = 0; i < x_size-1; i++) {
+		printf("╩═══");
+	}
+	printf("╝\n");
 }
 
 int is_empty(int** game_array, int x, int y) {
