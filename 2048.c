@@ -11,7 +11,7 @@ void print_array(int** game_array) {
 	for (int j = 0; j < y_size; j++) {
 		for (int i = 0; i < x_size; i++) {
 			if (game_array[j][i] == 0) {
-				printf("   ");
+				printf(" x ");
 			} else {
 				printf(" %d ", game_array[j][i]);
 			}
@@ -86,10 +86,9 @@ int main(void) {
 		return -1;
 	}
 
-    
-    
-    if (is_empty(game_array, 2, 3)) printf("joo\n");
     create_random_tile(game_array, 2);
+    create_random_tile(game_array, 2);
+
     print_array(game_array);
     for (int j = 0; j < y_size; j++) {
 		free(game_array[j]);
