@@ -15,41 +15,62 @@ enum movement {
 	DOWN
 };
 
-void print_array(int** game_array) {
-	printf("╔═══");
+void print_top() {
+	printf("╔═══════");
 	for (int i = 0; i < x_size-1; i++) {
-		printf("╦═══");
+		printf("╦═══════");
 	}
 	printf("╗\n");
-	for (int j = 0; j < y_size; j++) {
-		printf("║");
-		for (int i = 0; i < x_size; i++) {
-			if (game_array[j][i] == 0) {
-				if (i != 0) {
-					printf("║   ");
-				} else {
-					printf("   ");
-				}
-			} else {
-				if (i != 0) {
-					printf("║ %d ", game_array[j][i]);
-				} else {
-				printf(" %d ", game_array[j][i]);
-				}
-			}
+}
+
+void print_middle_walls() {
+	//printf("\nmiddle\n");
+	printf("║       ");
+		for (int i = 0; i < x_size-1; i++) {
+			printf("║       ");
 		}
 		printf("║\n");
-		if (j != y_size-1) {
-			printf("╠═══");
-			for (int i = 0; i < x_size-1; i++) {
-				printf("╬═══");
+}
+
+void print_row_lines() {
+	printf("╠═══════");
+	for (int i = 0; i < x_size-1; i++) {
+		printf("╬═══════");
+	}
+	printf("╣\n");
+}
+
+
+void print_array(int** game_array) {
+	print_top();
+	for (int j = 0; j < y_size; j++) {
+		print_middle_walls();
+		
+		for (int i = 0; i < x_size; i++) {
+			int num = game_array[j][i];
+			if (num == 0) {
+				printf("║       ");
+			} else if (num >= 1000) {
+				printf("║ %d  ", num);
+			} else if (num >= 100 && num < 1000) {
+				printf("║  %d  ", num);
+			} else if (num >= 10 && num < 100) {
+				printf("║   %d  ", num);
+			} else {
+				printf("║   %d   ", num);
 			}
-			printf("╣\n");
+			
+		}
+		printf("║\n");
+		
+		print_middle_walls();
+		if (j < y_size - 1) {
+			print_row_lines();
 		}
 	}
-	printf("╚═══");
+	printf("╚═══════");
 	for (int i = 0; i < x_size-1; i++) {
-		printf("╩═══");
+		printf("╩═══════");
 	}
 	printf("╝\n");
 }
