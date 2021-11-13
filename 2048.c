@@ -8,16 +8,28 @@ int x_size = 4;
 int y_size = 4;
 
 void print_array(int** game_array) {
+	printf("╔═══╦═══╦═══╦═══╗\n");
 	for (int j = 0; j < y_size; j++) {
+		printf("║");
 		for (int i = 0; i < x_size; i++) {
 			if (game_array[j][i] == 0) {
-				printf(" x ");
+				if (i != 0) {
+					printf("║   ");
+				} else {
+					printf("   ");
+				}
 			} else {
+				if (i != 0) {
+					printf("║ %d ", game_array[j][i]);
+				} else {
 				printf(" %d ", game_array[j][i]);
+				}
 			}
 		}
-		printf("\n");
+		printf("║\n");
+		if (j != y_size-1) printf("╠═══╬═══╬═══╬═══╣\n");
 	}
+	printf("╚═══╩═══╩═══╩═══╝\n");
 }
 
 int is_empty(int** game_array, int x, int y) {
@@ -40,7 +52,6 @@ void create_random_tile(int** game_array, int value) {
 	int rx;
 	int ry;
 	while (1) {
-		srand(time(NULL));
 		rx = rand() % 4;
 		ry = rand() % 4;
 		if (is_empty(game_array, rx, ry)) {
@@ -79,7 +90,7 @@ int main(void) {
     new_terminal = old_terminal;
     new_terminal.c_lflag &= ~(ICANON | ECHO);          
     tcsetattr(STDIN_FILENO, TCSANOW, &new_terminal);
-    
+    srand(time(NULL));
     
     int** game_array = create_game_array();
     if (!game_array) {
