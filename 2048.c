@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 #include <termios.h>
 #include <unistd.h>
@@ -110,32 +111,68 @@ void combine(int* a, int n) {
 }
 
 void move_single_array(int* a, int n) {
-	move_left(a, n);
+	move_all_left(a, n);
 	combine(a, n);
-	move_left(a, n);
+	move_all_left(a, n);
 }
 
-void move(int** game_array, enum movement dir) {
-	int* arr;
-	if (dir == DOWN || dir == UP) {
-		int* arr = malloc(y_size * sizeof(int));
-	} else {
-		int* arr = malloc(x_size * sizeof(int));
-	}
-	if (!arr) exit(EXIT_FAILURE);
+void reverse_array(int* array, int n) {
+	int* temp = malloc(n*sizeof(int));
+ 
+    for (int i = 0; i < n; i++) {
+        temp[n - 1 - i] = array[i];
+    }
+    for (int i = 0; i < n; i++) {
+        array[i] = temp[i];
+    }
+    free(temp);
 	
-	
+}
+
+void move(int** game_array, enum movement dir) {	
 	if (dir == DOWN) {
-		
+		for (int i = 0; i < x_size; i++) {
+			int* temp = malloc(y_size*sizeof(int));
+			for (int j = 0; j < y_size; j++) {
+				temp[j] = game_array[j][i];
+			}
+			reverse_array(temp, y_size);
+			move_single_array(temp, y_size);
+			reverse_array(temp, y_size);
+			for (int j = 0; j < y_size; j++) {
+				game_array[j][i] = temp[j];
+			}
+			free(temp);
+		}
 	}
 	if (dir == UP) {
-		printf("up\n");
+		for (int i = 0; i < x_size; i++) {
+			int* temp = malloc(y_size*sizeof(int));
+			for (int j = 0; j < y_size; j++) {
+				temp[j] = game_array[j][i];
+			}
+			move_single_array(temp, y_size);
+			for (int j = 0; j < y_size; j++) {
+				game_array[j][i] = temp[j];
+			}
+			free(temp);
+		}
 	}
 	if (dir == LEFT) {
-		printf("left\n");
+		for (int j = 0; j < y_size; j++) {
+			move_single_array(game_array[j], x_size);
+		}
 	}
 	if (dir == RIGHT) {
-		printf("right\n");
+		for (int j = 0; j < y_size; j++) {
+			int* temp = malloc(x_size*sizeof(int));
+			temp = memcpy(temp, game_array[j], x_size*sizeof(int));
+			reverse_array(temp, x_size);
+			move_single_array(temp, x_size);
+			reverse_array(temp, x_size);
+			game_array[j] = memcpy(game_array[j], temp, x_size*sizeof(int));
+			free(temp);
+		}
 	}
 }
 
@@ -181,6 +218,9 @@ int main(void) {
     // main game loop
     while (1) {
 		if (is_full(game_array)) break;
+		
+		print_array(game_array);
+		
 		char key = getchar();
 		switch (key) {
 			case 'w':
@@ -201,7 +241,6 @@ int main(void) {
 		
 	}
 
-    print_array(game_array);
     for (int j = 0; j < y_size; j++) {
 		free(game_array[j]);
 	}
