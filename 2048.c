@@ -7,6 +7,8 @@
 
 int x_size = 4;
 int y_size = 4;
+int score = 0;
+int moves = 0;
 
 enum movement {
 	LEFT,
@@ -42,6 +44,7 @@ void print_row_lines() {
 
 
 void print_array(int** game_array) {
+	printf("SCORE: %d    MOVES: %d\n", score, moves);
 	print_top();
 	for (int j = 0; j < y_size; j++) {
 		print_middle_walls();
@@ -125,6 +128,7 @@ void combine(int* a, int n) {
 		if (i < n) {
 			if (a[i] == a[i+1]) {
 				a[i] = a[i] * 2;
+				score += a[i];
 				a[i+1] = 0;
 			}
 		}
@@ -151,6 +155,7 @@ void reverse_array(int* array, int n) {
 }
 
 void move(int** game_array, enum movement dir) {	
+	moves++;
 	if (dir == DOWN) {
 		for (int i = 0; i < x_size; i++) {
 			int* temp = malloc(y_size*sizeof(int));
@@ -237,28 +242,34 @@ int main(void) {
     // main game loop
     while (1) {
 		if (is_full(game_array)) break;
-		create_random_tile(game_array, 2);
+		
 		print_array(game_array);
 		
 		char key = getchar();
 		switch (key) {
 			case 'w':
 				move(game_array, UP);
+				create_random_tile(game_array, 2);
 				break;
 			case 'a':
 				move(game_array, LEFT);
+				create_random_tile(game_array, 2);
 				break;
 			case 's':
 				move(game_array, DOWN);
+				create_random_tile(game_array, 2);
 				break;
 			case 'd':
 				move(game_array, RIGHT);
+				create_random_tile(game_array, 2);
 				break;
 			default:
 				break;
 		}
 		
 	}
+	
+	printf("\nGAME OVER!\n");
 
     for (int j = 0; j < y_size; j++) {
 		free(game_array[j]);
