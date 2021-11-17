@@ -88,6 +88,7 @@ void printusage() {
 	fprintf(stderr, "    --y <value>    Set vertical size (default 4)\n");
 }
 
+// checks if a tile in array is empty
 int is_empty(int** game_array, int x, int y) {
 	if (game_array[y][x] != 0) {
 		return 0;
@@ -95,6 +96,7 @@ int is_empty(int** game_array, int x, int y) {
 	else return 1;
 }
 
+// returns true if the whole array is full (and game is over)
 int is_full(int** game_array) {
 	for (int j = 0; j < y_size; j++) {
 		for (int i = 0; i < x_size; i++) {
@@ -104,6 +106,7 @@ int is_full(int** game_array) {
 	return 1;
 }
 
+// creates a new tile in random (empty) coordinates 
 void create_random_tile(int** game_array, int value) {
 	int rx;
 	int ry;
@@ -117,6 +120,7 @@ void create_random_tile(int** game_array, int value) {
 	game_array[ry][rx] = value;
 }
 
+// moves all tiles in array to left
 void move_all_left(int* a, int n) {
 	int last = 0;
 	for (int i = 0; i < n; i++) {
@@ -133,6 +137,7 @@ void move_all_left(int* a, int n) {
 	}
 }
 
+// goes over an array and combines tiles with the same number
 void combine(int* a, int n) {
 	for (int i = 0; i < n; i++) {
 		if (i < n-1) {
@@ -151,6 +156,7 @@ void move_single_array(int* a, int n) {
 	move_all_left(a, n);
 }
 
+// function for inverting a table 
 void reverse_array(int* array, int n) {
 	int* temp = malloc(n*sizeof(int));
  
@@ -164,6 +170,7 @@ void reverse_array(int* array, int n) {
 	
 }
 
+// moves all tiles in the game to chosen direction
 void move(int** game_array, enum movement dir) {	
 	moves++;
 	if (dir == DOWN) {
@@ -212,6 +219,7 @@ void move(int** game_array, enum movement dir) {
 	}
 }
 
+// creates two dimensional array filled with zeros
 int** create_game_array() {
 	int** game_array;
 	game_array = malloc(y_size * sizeof(int *));
@@ -235,6 +243,7 @@ int** create_game_array() {
 	return game_array;
 }
 
+// converts strings to integers with error checking
 int str2int(char* str) {
 	char *end;
 	errno = 0;
@@ -283,6 +292,7 @@ int main(int argc, char** argv) {
 		
 	}
 	
+	// change terminal mode
     static struct termios old_terminal, new_terminal;
     tcgetattr(STDIN_FILENO, &old_terminal);
     new_terminal = old_terminal;
@@ -327,10 +337,13 @@ int main(int argc, char** argv) {
 	
 	printf("\nGAME OVER!\n");
 
+	// free main game array
     for (int j = 0; j < y_size; j++) {
 		free(game_array[j]);
 	}
     free(game_array);
+    
+    // return terminal back to the previous state
     tcsetattr(STDIN_FILENO, TCSANOW, &old_terminal);
     return 0;
 }
