@@ -26,7 +26,6 @@ void print_top() {
 }
 
 void print_middle_walls() {
-	//printf("\nmiddle\n");
 	printf("║       ");
 		for (int i = 0; i < x_size-1; i++) {
 			printf("║       ");
@@ -125,7 +124,7 @@ void move_all_left(int* a, int n) {
 
 void combine(int* a, int n) {
 	for (int i = 0; i < n; i++) {
-		if (i < n) {
+		if (i < n-1) {
 			if (a[i] == a[i+1]) {
 				a[i] = a[i] * 2;
 				score += a[i];
