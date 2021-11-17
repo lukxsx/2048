@@ -4,7 +4,10 @@
 #include <time.h>
 #include <termios.h>
 #include <unistd.h>
+#include <errno.h>
+#include <limits.h>
 
+char *program_name;
 int x_size = 4;
 int y_size = 4;
 int score = 0;
@@ -77,6 +80,14 @@ void print_array(int** game_array) {
 	printf("╝\n");
 }
 
+void printusage() {
+	fprintf(stderr, "Usage: %s [options]\n", program_name);
+	fprintf(stderr, "Available options:\n");
+	fprintf(stderr, "    --help         Show this information\n");
+	fprintf(stderr, "    --x <value>    Set horizontal size (default 4)\n");
+	fprintf(stderr, "    --y <value>    Set vertical size (default 4)\n");
+}
+
 int is_empty(int** game_array, int x, int y) {
 	if (game_array[y][x] != 0) {
 		return 0;
@@ -97,8 +108,8 @@ void create_random_tile(int** game_array, int value) {
 	int rx;
 	int ry;
 	while (1) {
-		rx = rand() % 4;
-		ry = rand() % 4;
+		rx = rand() % x_size;
+		ry = rand() % y_size;
 		if (is_empty(game_array, rx, ry)) {
 			break;
 		}
@@ -224,14 +235,61 @@ int** create_game_array() {
 	return game_array;
 }
 
-int main(void) {
+int str2int(char* str) {
+	char *end;
+	errno = 0;
+	long value = strtol(str, &end, 10);
+	if ((errno == ERANGE && (value == LONG_MAX || value == LONG_MIN))
+            || (errno != 0 && value == 0)) {
+		printusage();
+        exit(EXIT_FAILURE);
+    }
+    if (end == str) {
+		printusage();
+        exit(EXIT_FAILURE);
+    }
+    return (int) value;
+}
+
+int main(int argc, char** argv) {
+	
+	// process args
+	program_name = argv[0];
+	if (argc > 1) {
+		for (int i = 1; i < argc; i++) {
+			printf("i = %d\n", i);
+			printf("argc: %d\n", argc);
+			
+			// get x size
+			if (!strcmp(argv[i], "--x")) {
+				if (argc > i+1) {
+					x_size = str2int(argv[i+1]);
+				}
+			}
+			
+			// get y size
+			if (!strcmp(argv[i], "--y")) {
+				if (argc > i+1) {
+					y_size = str2int(argv[i+1]);
+				}
+			}
+			
+			// help
+			if (!strcmp(argv[i], "--help")) {
+				printusage();
+				exit(EXIT_SUCCESS);
+			}
+		}
+		
+	}
+	
     static struct termios old_terminal, new_terminal;
     tcgetattr(STDIN_FILENO, &old_terminal);
     new_terminal = old_terminal;
     new_terminal.c_lflag &= ~(ICANON | ECHO);          
     tcsetattr(STDIN_FILENO, TCSANOW, &new_terminal);
     srand(time(NULL));
-    
+        
     int** game_array = create_game_array();
     if (!game_array) {
 		return -1;
@@ -240,9 +298,8 @@ int main(void) {
     create_random_tile(game_array, 2);
     // main game loop
     while (1) {
-		if (is_full(game_array)) break;
-		
 		print_array(game_array);
+		if (is_full(game_array)) break;
 		
 		char key = getchar();
 		switch (key) {
