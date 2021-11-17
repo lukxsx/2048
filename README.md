@@ -1,6 +1,6 @@
 # 2048
 
-Command line version the 2048 game.
+Command line version of the 2048 game.
 
 Compile with
 ```
