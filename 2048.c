@@ -83,9 +83,10 @@ void print_array(int** game_array) {
 void printusage() {
 	fprintf(stderr, "Usage: %s [options]\n", program_name);
 	fprintf(stderr, "Available options:\n");
-	fprintf(stderr, "    --help         Show this information\n");
 	fprintf(stderr, "    --x <value>    Set horizontal size (default 4)\n");
 	fprintf(stderr, "    --y <value>    Set vertical size (default 4)\n");
+	fprintf(stderr, "    --help         Show this information\n");
+
 }
 
 // checks if a tile in array is empty
@@ -304,9 +305,11 @@ int main(int argc, char** argv) {
 	}
 
     create_random_tile(game_array, 2);
+    create_random_tile(game_array, 2);
+    print_array(game_array);
+    
     // main game loop
     while (1) {
-		print_array(game_array);
 		if (is_full(game_array)) break;
 		
 		char key = getchar();
@@ -314,18 +317,22 @@ int main(int argc, char** argv) {
 			case 'w':
 				move(game_array, UP);
 				create_random_tile(game_array, 2);
+				print_array(game_array);
 				break;
 			case 'a':
 				move(game_array, LEFT);
 				create_random_tile(game_array, 2);
+				print_array(game_array);
 				break;
 			case 's':
 				move(game_array, DOWN);
 				create_random_tile(game_array, 2);
+				print_array(game_array);
 				break;
 			case 'd':
 				move(game_array, RIGHT);
 				create_random_tile(game_array, 2);
+				print_array(game_array);
 				break;
 			default:
 				break;
