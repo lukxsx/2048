@@ -20,6 +20,40 @@ enum movement {
 	DOWN
 };
 
+// creates two dimensional array filled with zeros
+int** create_game_array() {
+	int** game_array;
+	game_array = malloc(y_size * sizeof(int *));
+    if (!game_array) {
+		exit(EXIT_FAILURE);
+	}
+	
+	for (int j = 0; j < y_size; j++) {
+		game_array[j] = malloc(x_size * sizeof(int));
+		if (!game_array[j]) {
+			for (int i = 0; i < j; i++) {
+				free(game_array[i]);
+			}
+			free(game_array);
+			exit(EXIT_FAILURE);
+		}
+		for (int i = 0; i < x_size; i++) {
+			game_array[j][i] = 0;
+		}
+	}
+	return game_array;
+}
+
+
+// free game arrays
+void free_game_array(int** array) {
+    for (int j = 0; j < y_size; j++) {
+		free(array[j]);
+	}
+    free(array);
+}
+
+
 void print_top() {
 	printf("╔═══════");
 	for (int i = 0; i < x_size-1; i++) {
@@ -83,10 +117,31 @@ void print_array(int** game_array) {
 void printusage() {
 	fprintf(stderr, "Usage: %s [options]\n", program_name);
 	fprintf(stderr, "Available options:\n");
-	fprintf(stderr, "    --x <value>    Set horizontal size (default 4)\n");
-	fprintf(stderr, "    --y <value>    Set vertical size (default 4)\n");
+	fprintf(stderr, "    --x <value>      Set horizontal size (default 4)\n");
+	fprintf(stderr, "    --y <value>      Set vertical size (default 4)\n");
 	fprintf(stderr, "    --help         Show this information\n");
 
+}
+
+// checks if two game arrays are same
+/*int has_changed(int** a, int** b) {
+	for (int j = 0; j < y_size; j++) {
+		for (int i = 0; i < x_size; i++) {
+			if (a[j][i] == b[j][i]) return 1;
+		}
+	}
+	return 0;
+	
+}*/
+
+// same, but using memcmp
+// trying to find out which is faster way
+ int has_changed(int** a, int** b) {
+	for (int j = 0; j < y_size; j++) {
+		if (memcmp(a[j], b[j], x_size*sizeof(int)) != 0) return 1;
+	}
+	return 0;
+	
 }
 
 // checks if a tile in array is empty
@@ -220,29 +275,6 @@ void move(int** game_array, enum movement dir) {
 	}
 }
 
-// creates two dimensional array filled with zeros
-int** create_game_array() {
-	int** game_array;
-	game_array = malloc(y_size * sizeof(int *));
-    if (!game_array) {
-		exit(EXIT_FAILURE);
-	}
-	
-	for (int j = 0; j < y_size; j++) {
-		game_array[j] = malloc(x_size * sizeof(int));
-		if (!game_array[j]) {
-			for (int i = 0; i < j; i++) {
-				free(game_array[i]);
-			}
-			free(game_array);
-			exit(EXIT_FAILURE);
-		}
-		for (int i = 0; i < x_size; i++) {
-			game_array[j][i] = 0;
-		}
-	}
-	return game_array;
-}
 
 // converts strings to integers with error checking
 int str2int(char* str) {
@@ -342,12 +374,8 @@ int main(int argc, char** argv) {
 	
 	printf("\nGAME OVER!\n");
 
-	// free main game array
-    for (int j = 0; j < y_size; j++) {
-		free(game_array[j]);
-	}
-    free(game_array);
-    
+	free_game_array(game_array);
+	
     // return terminal back to the previous state
     tcsetattr(STDIN_FILENO, TCSANOW, &old_terminal);
     return 0;
