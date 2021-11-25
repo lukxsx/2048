@@ -7,7 +7,6 @@
 #include <errno.h>
 #include <limits.h>
 
-static char *program_name;
 static int x_size = 4;
 static int y_size = 4;
 static int score = 0;
@@ -302,7 +301,6 @@ int str2int(char* str) {
 int main(int argc, char** argv) {
 	
 	// process args
-	program_name = argv[0];
 	if (argc > 1) {
 		for (int i = 1; i < argc; i++) {
 			
