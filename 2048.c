@@ -13,6 +13,7 @@ typedef struct {
 	int y_size;
 	int score;
 	int moves;
+	int startnum;
 } game_state_t;
 
 enum movement {
@@ -107,12 +108,13 @@ void print_array(game_state_t * game) {
 	printf("╝\n");
 }
 
-void printusage() {
-	fprintf(stderr, "Usage: 2048 [options]\n");
+void printusage(char * program_name) {
+	fprintf(stderr, "Usage: %s [options]\n", program_name);
 	fprintf(stderr, "Available options:\n");
 	fprintf(stderr, "    --x <value>      Set horizontal size (default 4)\n");
 	fprintf(stderr, "    --y <value>      Set vertical size (default 4)\n");
-	fprintf(stderr, "    --help         Show this information\n");
+	fprintf(stderr, "    --n <value>      Set start tile value (default 2)\n");
+	fprintf(stderr, "    --help           Show this information\n");
 
 }
 
@@ -136,8 +138,10 @@ int is_full(game_state_t * game) {
 
 // creates a new tile in random (empty) coordinates 
 void create_random_tile(game_state_t * game) {
-	int rx;
-	int ry;
+	// make 2 with probability of 75%, 4 with probability of 25%
+	int prob = (rand() & 1) | (rand() & 1);
+	int value = prob ? game->startnum : game->startnum*2;
+	int rx, ry;
 	while (1) {
 		rx = rand() % game->x_size;
 		ry = rand() % game->y_size;
@@ -145,7 +149,7 @@ void create_random_tile(game_state_t * game) {
 			break;
 		}
 	}
-	game->game_array[ry][rx] = 2;
+	game->game_array[ry][rx] = value;
 }
 
 // moves all tiles in array to left
@@ -265,11 +269,9 @@ int str2int(char* str) {
 	long value = strtol(str, &end, 10);
 	if ((errno == ERANGE && (value == LONG_MAX || value == LONG_MIN))
             || (errno != 0 && value == 0)) {
-		printusage();
         exit(EXIT_FAILURE);
     }
     if (end == str) {
-		printusage();
         exit(EXIT_FAILURE);
     }
     return (int) value;
@@ -291,6 +293,7 @@ int main(int argc, char** argv) {
     game->y_size = 4;
     game->score = 0;
     game->moves = 0;
+    game->startnum = 2;
     
     // process args
 	if (argc > 1) {
@@ -310,9 +313,16 @@ int main(int argc, char** argv) {
 				}
 			}
 			
+			// get start number
+			if (!strcmp(argv[i], "--n")) {
+				if (argc > i+1) {
+					game->startnum = str2int(argv[i+1]);
+				}
+			}
+			
 			// help
 			if (!strcmp(argv[i], "--help")) {
-				printusage();
+				printusage(argv[0]);
 				exit(EXIT_SUCCESS);
 			}
 		}
