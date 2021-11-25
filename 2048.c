@@ -13,6 +13,13 @@ static int y_size = 4;
 static int score = 0;
 static int moves = 0;
 
+typedef struct {
+  int x_size;
+  int y_size;
+  int score;
+  int moves;
+} settings_t;
+
 enum movement {
 	LEFT,
 	RIGHT,
@@ -115,7 +122,7 @@ void print_array(int** game_array) {
 }
 
 void printusage() {
-	fprintf(stderr, "Usage: %s [options]\n", program_name);
+	fprintf(stderr, "Usage: 2048 [options]\n");
 	fprintf(stderr, "Available options:\n");
 	fprintf(stderr, "    --x <value>      Set horizontal size (default 4)\n");
 	fprintf(stderr, "    --y <value>      Set vertical size (default 4)\n");
@@ -227,8 +234,7 @@ void reverse_array(int* array, int n) {
 }
 
 // moves all tiles in the game to chosen direction
-void move(int** game_array, enum movement dir) {	
-	moves++;
+void move(int** game_array, enum movement dir) {
 	if (dir == DOWN) {
 		for (int i = 0; i < x_size; i++) {
 			int* temp = malloc(y_size*sizeof(int));
@@ -330,6 +336,12 @@ int main(int argc, char** argv) {
     new_terminal.c_lflag &= ~(ICANON | ECHO);          
     tcsetattr(STDIN_FILENO, TCSANOW, &new_terminal);
     srand(time(NULL));
+    
+    settings_t * set = malloc(sizeof(settings_t));
+    set->x_size = 4;
+    set->y_size = 4;
+    set->score = 0;
+    set->moves = 0;
         
     int** game_array = create_game_array();
     if (!game_array) {
@@ -374,6 +386,7 @@ int main(int argc, char** argv) {
 	
 	printf("\nGAME OVER!\n");
 
+	free(set);
 	free_game_array(game_array);
 	
     // return terminal back to the previous state
