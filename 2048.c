@@ -8,10 +8,11 @@
 #include <limits.h>
 
 typedef struct {
-  int x_size;
-  int y_size;
-  int score;
-  int moves;
+	int** game_array;
+	int x_size;
+	int y_size;
+	int score;
+	int moves;
 } game_state_t;
 
 enum movement {
@@ -71,14 +72,14 @@ void print_row_lines(int x_size) {
 }
 
 
-void print_array(int** game_array, game_state_t * game) {
+void print_array(game_state_t * game) {
 	printf("SCORE: %d    MOVES: %d\n", game->score, game->moves);
 	print_top(game->x_size);
 	for (int j = 0; j < game->y_size; j++) {
 		print_middle_walls(game->x_size);
 		
 		for (int i = 0; i < game->x_size; i++) {
-			int num = game_array[j][i];
+			int num = game->game_array[j][i];
 			if (num == 0) {
 				printf("║       ");
 			} else if (num >= 1000) {
@@ -124,27 +125,27 @@ int is_empty(int** game_array, int x, int y) {
 }
 
 // returns true if the whole array is full (and game is over)
-int is_full(int** game_array, game_state_t * game) {
+int is_full(game_state_t * game) {
 	for (int j = 0; j < game->y_size; j++) {
 		for (int i = 0; i < game->x_size; i++) {
-			if (game_array[j][i] == 0) return 0;
+			if (game->game_array[j][i] == 0) return 0;
 		}
 	}
 	return 1;
 }
 
 // creates a new tile in random (empty) coordinates 
-void create_random_tile(int** game_array, game_state_t * game) {
+void create_random_tile(game_state_t * game) {
 	int rx;
 	int ry;
 	while (1) {
 		rx = rand() % game->x_size;
 		ry = rand() % game->y_size;
-		if (is_empty(game_array, rx, ry)) {
+		if (is_empty(game->game_array, rx, ry)) {
 			break;
 		}
 	}
-	game_array[ry][rx] = 2;
+	game->game_array[ry][rx] = 2;
 }
 
 // moves all tiles in array to left
@@ -201,20 +202,21 @@ void reverse_array(int* array, int n) {
 }
 
 // moves all tiles in the game to chosen direction
-void move(int** game_array, game_state_t * game, enum movement dir) {
+void move(game_state_t * game, enum movement dir) {
 	int modified = 0;
 	int *modflag = &modified;
+	
 	if (dir == DOWN) {
 		for (int i = 0; i < game->x_size; i++) {
 			int* temp = malloc(game->y_size*sizeof(int));
 			for (int j = 0; j < game->y_size; j++) {
-				temp[j] = game_array[j][i];
+				temp[j] = game->game_array[j][i];
 			}
 			reverse_array(temp, game->y_size);
 			move_single_array(temp, game->y_size, game, modflag);
 			reverse_array(temp, game->y_size);
 			for (int j = 0; j < game->y_size; j++) {
-				game_array[j][i] = temp[j];
+				game->game_array[j][i] = temp[j];
 			}
 			free(temp);
 		}
@@ -223,35 +225,35 @@ void move(int** game_array, game_state_t * game, enum movement dir) {
 		for (int i = 0; i < game->x_size; i++) {
 			int* temp = malloc(game->y_size*sizeof(int));
 			for (int j = 0; j < game->y_size; j++) {
-				temp[j] = game_array[j][i];
+				temp[j] = game->game_array[j][i];
 			}
 			move_single_array(temp, game->y_size, game, modflag);
 			for (int j = 0; j < game->y_size; j++) {
-				game_array[j][i] = temp[j];
+				game->game_array[j][i] = temp[j];
 			}
 			free(temp);
 		}
 	}
 	if (dir == LEFT) {
 		for (int j = 0; j < game->y_size; j++) {
-			move_single_array(game_array[j], game->x_size, game, modflag);
+			move_single_array(game->game_array[j], game->x_size, game, modflag);
 		}
 	}
 	if (dir == RIGHT) {
 		for (int j = 0; j < game->y_size; j++) {
 			int* temp = malloc(game->x_size*sizeof(int));
-			temp = memcpy(temp, game_array[j], game->x_size*sizeof(int));
+			temp = memcpy(temp, game->game_array[j], game->x_size*sizeof(int));
 			reverse_array(temp, game->x_size);
 			move_single_array(temp, game->x_size, game, modflag);
 			reverse_array(temp, game->x_size);
-			game_array[j] = memcpy(game_array[j], temp, game->x_size*sizeof(int));
+			game->game_array[j] = memcpy(game->game_array[j], temp, game->x_size*sizeof(int));
 			free(temp);
 		}
 	}
 	if (*modflag) {
-		create_random_tile(game_array, game);
+		create_random_tile(game);
 		game->moves++;
-		print_array(game_array, game);
+		print_array(game);
 	}
 }
 
@@ -281,6 +283,7 @@ int main(int argc, char** argv) {
     new_terminal = old_terminal;
     new_terminal.c_lflag &= ~(ICANON | ECHO);          
     tcsetattr(STDIN_FILENO, TCSANOW, &new_terminal);
+    
     srand(time(NULL));
     
     game_state_t * game = malloc(sizeof(game_state_t));
@@ -316,32 +319,34 @@ int main(int argc, char** argv) {
 		
 	}
         
-    int** game_array = create_game_array(game);
-    if (!game_array) {
+    game->game_array = create_game_array(game);
+    if (!game->game_array) {
 		return -1;
 	}
+	
+	
 
-    create_random_tile(game_array, game);
-    create_random_tile(game_array, game);
-    print_array(game_array, game);
+    create_random_tile(game);
+    create_random_tile(game);
+    print_array(game);
     
     // main game loop
     while (1) {
-		if (is_full(game_array, game)) break;
+		if (is_full(game)) break;
 		
 		char key = getchar();
 		switch (key) {
 			case 'w':
-				move(game_array, game, UP);
+				move(game, UP);
 				break;
 			case 'a':
-				move(game_array, game, LEFT);
+				move(game, LEFT);
 				break;
 			case 's':
-				move(game_array, game, DOWN);
+				move(game, DOWN);
 				break;
 			case 'd':
-				move(game_array, game, RIGHT);
+				move(game, RIGHT);
 				break;
 			default:
 				break;
@@ -352,9 +357,9 @@ int main(int argc, char** argv) {
 	printf("\nGAME OVER!\n");
 
 	for (int j = 0; j < game->y_size; j++) {
-		free(game_array[j]);
+		free(game->game_array[j]);
 	}
-    free(game_array);
+    free(game->game_array);
 	free(game);
     // return terminal back to the previous state
     tcsetattr(STDIN_FILENO, TCSANOW, &old_terminal);
