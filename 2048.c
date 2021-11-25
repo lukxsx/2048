@@ -6,6 +6,8 @@
 #include <unistd.h>
 #include <errno.h>
 #include <limits.h>
+#include <getopt.h>
+
 
 typedef struct {
 	int** game_array;
@@ -109,13 +111,13 @@ void print_array(game_state_t * game) {
 }
 
 void printusage(char * program_name) {
+	fprintf(stderr, "Simple command line 2048 clone. Can be played with WASD keys.\n");
 	fprintf(stderr, "Usage: %s [options]\n", program_name);
 	fprintf(stderr, "Available options:\n");
-	fprintf(stderr, "    --x <value>      Set horizontal size (default 4)\n");
-	fprintf(stderr, "    --y <value>      Set vertical size (default 4)\n");
-	fprintf(stderr, "    --n <value>      Set start tile value (default 2)\n");
-	fprintf(stderr, "    --help           Show this information\n");
-
+	fprintf(stderr, "    -x <value>    Set horizontal size (default 4, min 1)\n");
+	fprintf(stderr, "    -y <value>    Set vertical size (default 4, min 1)\n");
+	fprintf(stderr, "    -n <value>    Set start tile value (default 2, min 1)\n");
+	fprintf(stderr, "    -h            Show this information\n");
 }
 
 // checks if a tile in array is empty
@@ -261,33 +263,71 @@ void move(game_state_t * game, enum movement dir) {
 	}
 }
 
-
-// converts strings to integers with error checking
-int str2int(char* str) {
+int set_param(char* str, int* num) {
 	char *end;
 	errno = 0;
 	long value = strtol(str, &end, 10);
 	if ((errno == ERANGE && (value == LONG_MAX || value == LONG_MIN))
             || (errno != 0 && value == 0)) {
-        exit(EXIT_FAILURE);
+        return 0;
     }
     if (end == str) {
-        exit(EXIT_FAILURE);
+        return 0;
     }
-    return (int) value;
+    if (value <= 0) {
+		return 0;
+	}
+    *num = (int) value;
+    return 1;
+}
+
+int process_args(int argc, char** argv, game_state_t * game) {
+	int opt;
+	while ((opt = getopt(argc, argv, ":x:y:n:h")) != -1) {
+		switch (opt) {
+			case 'x':
+				if (!set_param(optarg, &game->x_size)) {
+					fprintf(stderr, "Incorrect argument %s\n", optarg);
+					printusage(argv[0]);
+					return 0;
+				}
+				break;
+			case 'y':
+				if (!set_param(optarg, &game->y_size)) {
+					fprintf(stderr, "Incorrect argument %s\n", optarg);
+					printusage(argv[0]);
+					return 0;
+				}
+				break;
+			case 'n':
+				if (!set_param(optarg, &game->startnum)) {
+					fprintf(stderr, "Incorrect argument %s\n", optarg);
+					printusage(argv[0]);
+					return 0;
+				}
+				break;
+			case 'h':
+				printusage(argv[0]);
+				return 0;
+			case '?':
+				printf("Unknown option: %c\n", optopt);
+				printusage(argv[0]);
+				return 0;
+				break;
+			case ':':
+				printf("Missing argument for %c\n", optopt);
+				printusage(argv[0]);
+				return 0;
+				break;
+		}
+	}
+	return 1;
 }
 
 int main(int argc, char** argv) {
-		
-	// change terminal mode
-    static struct termios old_terminal, new_terminal;
-    tcgetattr(STDIN_FILENO, &old_terminal);
-    new_terminal = old_terminal;
-    new_terminal.c_lflag &= ~(ICANON | ECHO);          
-    tcsetattr(STDIN_FILENO, TCSANOW, &new_terminal);
-    
     srand(time(NULL));
     
+    // initialize game options
     game_state_t * game = malloc(sizeof(game_state_t));
     game->x_size = 4;
     game->y_size = 4;
@@ -295,47 +335,28 @@ int main(int argc, char** argv) {
     game->moves = 0;
     game->startnum = 2;
     
-    // process args
-	if (argc > 1) {
-		for (int i = 1; i < argc; i++) {
-			
-			// get x size
-			if (!strcmp(argv[i], "--x")) {
-				if (argc > i+1) {
-					game->x_size = str2int(argv[i+1]);
-				}
-			}
-			
-			// get y size
-			if (!strcmp(argv[i], "--y")) {
-				if (argc > i+1) {
-					game->y_size = str2int(argv[i+1]);
-				}
-			}
-			
-			// get start number
-			if (!strcmp(argv[i], "--n")) {
-				if (argc > i+1) {
-					game->startnum = str2int(argv[i+1]);
-				}
-			}
-			
-			// help
-			if (!strcmp(argv[i], "--help")) {
-				printusage(argv[0]);
-				exit(EXIT_SUCCESS);
-			}
-		}
-		
+    // process command line arguments
+    if (!process_args(argc, argv, game)) {
+		free(game);
+		return EXIT_FAILURE;
 	}
-        
+    
+    
+    // create main game array
     game->game_array = create_game_array(game);
     if (!game->game_array) {
 		return -1;
 	}
 	
 	
-
+	// change terminal mode
+    static struct termios old_terminal, new_terminal;
+    tcgetattr(STDIN_FILENO, &old_terminal);
+    new_terminal = old_terminal;
+    new_terminal.c_lflag &= ~(ICANON | ECHO);          
+    tcsetattr(STDIN_FILENO, TCSANOW, &new_terminal);
+    
+    // create two initial tiles
     create_random_tile(game);
     create_random_tile(game);
     print_array(game);
@@ -365,12 +386,14 @@ int main(int argc, char** argv) {
 	}
 	
 	printf("\nGAME OVER!\n");
-
+	
+	// free everything
 	for (int j = 0; j < game->y_size; j++) {
 		free(game->game_array[j]);
 	}
     free(game->game_array);
 	free(game);
+	
     // return terminal back to the previous state
     tcsetattr(STDIN_FILENO, TCSANOW, &old_terminal);
     return 0;
