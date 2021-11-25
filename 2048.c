@@ -148,7 +148,7 @@ void create_random_tile(int** game_array, settings_t * set) {
 }
 
 // moves all tiles in array to left
-void move_all_left(int* a, int n) {
+void move_all_left(int* a, int n, int * modflag) {
 	int last = 0;
 	for (int i = 0; i < n; i++) {
 		if (a[i] == 0) {
@@ -158,29 +158,32 @@ void move_all_left(int* a, int n) {
 			a[last] = a[i];
 			if (i != last) {
 				a[i] = 0;
+				*modflag = 1;
 			}
+			
 			last++;
 		}
 	}
 }
 
 // goes over an array and combines tiles with the same number
-void combine(int* a, int n, settings_t * set) {
+void combine(int* a, int n, settings_t * set, int* modflag) {
 	for (int i = 0; i < n; i++) {
 		if (i < n-1) {
-			if (a[i] == a[i+1]) {
+			if (a[i] == a[i+1] && a[i] != 0) {
 				a[i] = a[i] * 2;
 				set->score += a[i];
+				*modflag = 1;
 				a[i+1] = 0;
 			}
 		}
 	}
 }
 
-void move_single_array(int* a, int n, settings_t * set) {
-	move_all_left(a, n);
-	combine(a, n, set);
-	move_all_left(a, n);
+void move_single_array(int* a, int n, settings_t * set, int * modflag) {
+	move_all_left(a, n, modflag);
+	combine(a, n, set, modflag);
+	move_all_left(a, n, modflag);
 }
 
 // function for inverting a table 
@@ -199,6 +202,8 @@ void reverse_array(int* array, int n) {
 
 // moves all tiles in the game to chosen direction
 void move(int** game_array, settings_t * set, enum movement dir) {
+	int modified = 0;
+	int *modflag = &modified;
 	if (dir == DOWN) {
 		for (int i = 0; i < set->x_size; i++) {
 			int* temp = malloc(set->y_size*sizeof(int));
@@ -206,7 +211,7 @@ void move(int** game_array, settings_t * set, enum movement dir) {
 				temp[j] = game_array[j][i];
 			}
 			reverse_array(temp, set->y_size);
-			move_single_array(temp, set->y_size, set);
+			move_single_array(temp, set->y_size, set, modflag);
 			reverse_array(temp, set->y_size);
 			for (int j = 0; j < set->y_size; j++) {
 				game_array[j][i] = temp[j];
@@ -220,7 +225,7 @@ void move(int** game_array, settings_t * set, enum movement dir) {
 			for (int j = 0; j < set->y_size; j++) {
 				temp[j] = game_array[j][i];
 			}
-			move_single_array(temp, set->y_size, set);
+			move_single_array(temp, set->y_size, set, modflag);
 			for (int j = 0; j < set->y_size; j++) {
 				game_array[j][i] = temp[j];
 			}
@@ -229,7 +234,7 @@ void move(int** game_array, settings_t * set, enum movement dir) {
 	}
 	if (dir == LEFT) {
 		for (int j = 0; j < set->y_size; j++) {
-			move_single_array(game_array[j], set->x_size, set);
+			move_single_array(game_array[j], set->x_size, set, modflag);
 		}
 	}
 	if (dir == RIGHT) {
@@ -237,13 +242,17 @@ void move(int** game_array, settings_t * set, enum movement dir) {
 			int* temp = malloc(set->x_size*sizeof(int));
 			temp = memcpy(temp, game_array[j], set->x_size*sizeof(int));
 			reverse_array(temp, set->x_size);
-			move_single_array(temp, set->x_size, set);
+			move_single_array(temp, set->x_size, set, modflag);
 			reverse_array(temp, set->x_size);
 			game_array[j] = memcpy(game_array[j], temp, set->x_size*sizeof(int));
 			free(temp);
 		}
 	}
-	print_array(game_array, set);
+	if (*modflag) {
+		create_random_tile(game_array, set);
+		set->moves++;
+		print_array(game_array, set);
+	}
 }
 
 
@@ -324,19 +333,15 @@ int main(int argc, char** argv) {
 		switch (key) {
 			case 'w':
 				move(game_array, set, UP);
-				create_random_tile(game_array, set);
 				break;
 			case 'a':
 				move(game_array, set, LEFT);
-				create_random_tile(game_array, set);
 				break;
 			case 's':
 				move(game_array, set, DOWN);
-				create_random_tile(game_array, set);
 				break;
 			case 'd':
 				move(game_array, set, RIGHT);
-				create_random_tile(game_array, set);
 				break;
 			default:
 				break;
