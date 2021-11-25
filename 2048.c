@@ -12,7 +12,7 @@ typedef struct {
   int y_size;
   int score;
   int moves;
-} settings_t;
+} game_state_t;
 
 enum movement {
 	LEFT,
@@ -22,15 +22,15 @@ enum movement {
 };
 
 // creates two dimensional array filled with zeros
-int** create_game_array(settings_t * set) {
+int** create_game_array(game_state_t * game) {
 	int** game_array;
-	game_array = malloc(set->y_size * sizeof(int *));
+	game_array = malloc(game->y_size * sizeof(int *));
     if (!game_array) {
 		exit(EXIT_FAILURE);
 	}
 	
-	for (int j = 0; j < set->y_size; j++) {
-		game_array[j] = malloc(set->x_size * sizeof(int));
+	for (int j = 0; j < game->y_size; j++) {
+		game_array[j] = malloc(game->x_size * sizeof(int));
 		if (!game_array[j]) {
 			for (int i = 0; i < j; i++) {
 				free(game_array[i]);
@@ -38,7 +38,7 @@ int** create_game_array(settings_t * set) {
 			free(game_array);
 			exit(EXIT_FAILURE);
 		}
-		for (int i = 0; i < set->x_size; i++) {
+		for (int i = 0; i < game->x_size; i++) {
 			game_array[j][i] = 0;
 		}
 	}
@@ -71,13 +71,13 @@ void print_row_lines(int x_size) {
 }
 
 
-void print_array(int** game_array, settings_t * set) {
-	printf("SCORE: %d    MOVES: %d\n", set->score, set->moves);
-	print_top(set->x_size);
-	for (int j = 0; j < set->y_size; j++) {
-		print_middle_walls(set->x_size);
+void print_array(int** game_array, game_state_t * game) {
+	printf("SCORE: %d    MOVES: %d\n", game->score, game->moves);
+	print_top(game->x_size);
+	for (int j = 0; j < game->y_size; j++) {
+		print_middle_walls(game->x_size);
 		
-		for (int i = 0; i < set->x_size; i++) {
+		for (int i = 0; i < game->x_size; i++) {
 			int num = game_array[j][i];
 			if (num == 0) {
 				printf("║       ");
@@ -94,13 +94,13 @@ void print_array(int** game_array, settings_t * set) {
 		}
 		printf("║\n");
 		
-		print_middle_walls(set->x_size);
-		if (j < set->y_size - 1) {
-			print_row_lines(set->x_size);
+		print_middle_walls(game->x_size);
+		if (j < game->y_size - 1) {
+			print_row_lines(game->x_size);
 		}
 	}
 	printf("╚═══════");
-	for (int i = 0; i < set->x_size-1; i++) {
+	for (int i = 0; i < game->x_size-1; i++) {
 		printf("╩═══════");
 	}
 	printf("╝\n");
@@ -124,9 +124,9 @@ int is_empty(int** game_array, int x, int y) {
 }
 
 // returns true if the whole array is full (and game is over)
-int is_full(int** game_array, settings_t * set) {
-	for (int j = 0; j < set->y_size; j++) {
-		for (int i = 0; i < set->x_size; i++) {
+int is_full(int** game_array, game_state_t * game) {
+	for (int j = 0; j < game->y_size; j++) {
+		for (int i = 0; i < game->x_size; i++) {
 			if (game_array[j][i] == 0) return 0;
 		}
 	}
@@ -134,12 +134,12 @@ int is_full(int** game_array, settings_t * set) {
 }
 
 // creates a new tile in random (empty) coordinates 
-void create_random_tile(int** game_array, settings_t * set) {
+void create_random_tile(int** game_array, game_state_t * game) {
 	int rx;
 	int ry;
 	while (1) {
-		rx = rand() % set->x_size;
-		ry = rand() % set->y_size;
+		rx = rand() % game->x_size;
+		ry = rand() % game->y_size;
 		if (is_empty(game_array, rx, ry)) {
 			break;
 		}
@@ -167,12 +167,12 @@ void move_all_left(int* a, int n, int * modflag) {
 }
 
 // goes over an array and combines tiles with the same number
-void combine(int* a, int n, settings_t * set, int* modflag) {
+void combine(int* a, int n, game_state_t * game, int* modflag) {
 	for (int i = 0; i < n; i++) {
 		if (i < n-1) {
 			if (a[i] == a[i+1] && a[i] != 0) {
 				a[i] = a[i] * 2;
-				set->score += a[i];
+				game->score += a[i];
 				*modflag = 1;
 				a[i+1] = 0;
 			}
@@ -180,9 +180,9 @@ void combine(int* a, int n, settings_t * set, int* modflag) {
 	}
 }
 
-void move_single_array(int* a, int n, settings_t * set, int * modflag) {
+void move_single_array(int* a, int n, game_state_t * game, int * modflag) {
 	move_all_left(a, n, modflag);
-	combine(a, n, set, modflag);
+	combine(a, n, game, modflag);
 	move_all_left(a, n, modflag);
 }
 
@@ -201,57 +201,57 @@ void reverse_array(int* array, int n) {
 }
 
 // moves all tiles in the game to chosen direction
-void move(int** game_array, settings_t * set, enum movement dir) {
+void move(int** game_array, game_state_t * game, enum movement dir) {
 	int modified = 0;
 	int *modflag = &modified;
 	if (dir == DOWN) {
-		for (int i = 0; i < set->x_size; i++) {
-			int* temp = malloc(set->y_size*sizeof(int));
-			for (int j = 0; j < set->y_size; j++) {
+		for (int i = 0; i < game->x_size; i++) {
+			int* temp = malloc(game->y_size*sizeof(int));
+			for (int j = 0; j < game->y_size; j++) {
 				temp[j] = game_array[j][i];
 			}
-			reverse_array(temp, set->y_size);
-			move_single_array(temp, set->y_size, set, modflag);
-			reverse_array(temp, set->y_size);
-			for (int j = 0; j < set->y_size; j++) {
+			reverse_array(temp, game->y_size);
+			move_single_array(temp, game->y_size, game, modflag);
+			reverse_array(temp, game->y_size);
+			for (int j = 0; j < game->y_size; j++) {
 				game_array[j][i] = temp[j];
 			}
 			free(temp);
 		}
 	}
 	if (dir == UP) {
-		for (int i = 0; i < set->x_size; i++) {
-			int* temp = malloc(set->y_size*sizeof(int));
-			for (int j = 0; j < set->y_size; j++) {
+		for (int i = 0; i < game->x_size; i++) {
+			int* temp = malloc(game->y_size*sizeof(int));
+			for (int j = 0; j < game->y_size; j++) {
 				temp[j] = game_array[j][i];
 			}
-			move_single_array(temp, set->y_size, set, modflag);
-			for (int j = 0; j < set->y_size; j++) {
+			move_single_array(temp, game->y_size, game, modflag);
+			for (int j = 0; j < game->y_size; j++) {
 				game_array[j][i] = temp[j];
 			}
 			free(temp);
 		}
 	}
 	if (dir == LEFT) {
-		for (int j = 0; j < set->y_size; j++) {
-			move_single_array(game_array[j], set->x_size, set, modflag);
+		for (int j = 0; j < game->y_size; j++) {
+			move_single_array(game_array[j], game->x_size, game, modflag);
 		}
 	}
 	if (dir == RIGHT) {
-		for (int j = 0; j < set->y_size; j++) {
-			int* temp = malloc(set->x_size*sizeof(int));
-			temp = memcpy(temp, game_array[j], set->x_size*sizeof(int));
-			reverse_array(temp, set->x_size);
-			move_single_array(temp, set->x_size, set, modflag);
-			reverse_array(temp, set->x_size);
-			game_array[j] = memcpy(game_array[j], temp, set->x_size*sizeof(int));
+		for (int j = 0; j < game->y_size; j++) {
+			int* temp = malloc(game->x_size*sizeof(int));
+			temp = memcpy(temp, game_array[j], game->x_size*sizeof(int));
+			reverse_array(temp, game->x_size);
+			move_single_array(temp, game->x_size, game, modflag);
+			reverse_array(temp, game->x_size);
+			game_array[j] = memcpy(game_array[j], temp, game->x_size*sizeof(int));
 			free(temp);
 		}
 	}
 	if (*modflag) {
-		create_random_tile(game_array, set);
-		set->moves++;
-		print_array(game_array, set);
+		create_random_tile(game_array, game);
+		game->moves++;
+		print_array(game_array, game);
 	}
 }
 
@@ -283,11 +283,11 @@ int main(int argc, char** argv) {
     tcsetattr(STDIN_FILENO, TCSANOW, &new_terminal);
     srand(time(NULL));
     
-    settings_t * set = malloc(sizeof(settings_t));
-    set->x_size = 4;
-    set->y_size = 4;
-    set->score = 0;
-    set->moves = 0;
+    game_state_t * game = malloc(sizeof(game_state_t));
+    game->x_size = 4;
+    game->y_size = 4;
+    game->score = 0;
+    game->moves = 0;
     
     // process args
 	if (argc > 1) {
@@ -296,14 +296,14 @@ int main(int argc, char** argv) {
 			// get x size
 			if (!strcmp(argv[i], "--x")) {
 				if (argc > i+1) {
-					set->x_size = str2int(argv[i+1]);
+					game->x_size = str2int(argv[i+1]);
 				}
 			}
 			
 			// get y size
 			if (!strcmp(argv[i], "--y")) {
 				if (argc > i+1) {
-					set->y_size = str2int(argv[i+1]);
+					game->y_size = str2int(argv[i+1]);
 				}
 			}
 			
@@ -316,32 +316,32 @@ int main(int argc, char** argv) {
 		
 	}
         
-    int** game_array = create_game_array(set);
+    int** game_array = create_game_array(game);
     if (!game_array) {
 		return -1;
 	}
 
-    create_random_tile(game_array, set);
-    create_random_tile(game_array, set);
-    print_array(game_array, set);
+    create_random_tile(game_array, game);
+    create_random_tile(game_array, game);
+    print_array(game_array, game);
     
     // main game loop
     while (1) {
-		if (is_full(game_array, set)) break;
+		if (is_full(game_array, game)) break;
 		
 		char key = getchar();
 		switch (key) {
 			case 'w':
-				move(game_array, set, UP);
+				move(game_array, game, UP);
 				break;
 			case 'a':
-				move(game_array, set, LEFT);
+				move(game_array, game, LEFT);
 				break;
 			case 's':
-				move(game_array, set, DOWN);
+				move(game_array, game, DOWN);
 				break;
 			case 'd':
-				move(game_array, set, RIGHT);
+				move(game_array, game, RIGHT);
 				break;
 			default:
 				break;
@@ -351,11 +351,11 @@ int main(int argc, char** argv) {
 	
 	printf("\nGAME OVER!\n");
 
-	for (int j = 0; j < set->y_size; j++) {
+	for (int j = 0; j < game->y_size; j++) {
 		free(game_array[j]);
 	}
     free(game_array);
-	free(set);
+	free(game);
     // return terminal back to the previous state
     tcsetattr(STDIN_FILENO, TCSANOW, &old_terminal);
     return 0;
