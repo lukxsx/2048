@@ -16,6 +16,7 @@ typedef struct {
 	int score;
 	int moves;
 	int startnum;
+	int best;
 } game_state_t;
 
 enum movement {
@@ -76,7 +77,7 @@ void print_row_lines(int x_size) {
 
 
 void print_array(game_state_t * game) {
-	printf("SCORE: %d    MOVES: %d\n", game->score, game->moves);
+	printf("SCORE: %d   MOVES: %d   BEST: %d\n", game->score, game->moves, game->best);
 	print_top(game->x_size);
 	for (int j = 0; j < game->y_size; j++) {
 		print_middle_walls(game->x_size);
@@ -152,6 +153,7 @@ void create_random_tile(game_state_t * game) {
 		}
 	}
 	game->game_array[ry][rx] = value;
+	game->best = value > game->best ? value : game->best;
 }
 
 // moves all tiles in array to left
@@ -182,6 +184,7 @@ void combine(int* a, int n, game_state_t * game, int* modflag) {
 				game->score += a[i];
 				*modflag = 1;
 				a[i+1] = 0;
+				game->best = a[i] > game->best ? a[i] : game->best;
 			}
 		}
 	}
@@ -328,6 +331,7 @@ int main(int argc, char** argv) {
     game->score = 0;
     game->moves = 0;
     game->startnum = 2;
+    game->best = game->startnum;
     
     // process command line arguments
     if (!process_args(argc, argv, game)) {
