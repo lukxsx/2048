@@ -30,10 +30,10 @@ enum movement {
 int** create_game_array(game_state_t * game) {
 	int** game_array;
 	game_array = malloc(game->y_size * sizeof(int *));
-    if (!game_array) {
+	if (!game_array) {
 		exit(EXIT_FAILURE);
 	}
-	
+
 	for (int j = 0; j < game->y_size; j++) {
 		game_array[j] = malloc(game->x_size * sizeof(int));
 		if (!game_array[j]) {
@@ -81,7 +81,7 @@ void print_array(game_state_t * game) {
 	print_top(game->x_size);
 	for (int j = 0; j < game->y_size; j++) {
 		print_middle_walls(game->x_size);
-		
+
 		for (int i = 0; i < game->x_size; i++) {
 			int num = game->game_array[j][i];
 			if (num == 0) {
@@ -95,10 +95,10 @@ void print_array(game_state_t * game) {
 			} else {
 				printf("║   %d   ", num);
 			}
-			
+
 		}
 		printf("║\n");
-		
+
 		print_middle_walls(game->x_size);
 		if (j < game->y_size - 1) {
 			print_row_lines(game->x_size);
@@ -139,7 +139,7 @@ int is_full(game_state_t * game) {
 	return 1;
 }
 
-// creates a new tile in random (empty) coordinates 
+// creates a new tile in random (empty) coordinates
 void create_random_tile(game_state_t * game) {
 	// make 2 with probability of 75%, 4 with probability of 25%
 	int prob = (rand() & 1) | (rand() & 1);
@@ -169,7 +169,7 @@ void move_all_left(int* a, int n, int * modflag) {
 				a[i] = 0;
 				*modflag = 1;
 			}
-			
+
 			last++;
 		}
 	}
@@ -196,25 +196,25 @@ void move_single_array(int* a, int n, game_state_t * game, int * modflag) {
 	move_all_left(a, n, modflag);
 }
 
-// function for inverting a table 
+// function for inverting a table
 void reverse_array(int* array, int n) {
 	int* temp = malloc(n*sizeof(int));
- 
-    for (int i = 0; i < n; i++) {
-        temp[n - 1 - i] = array[i];
-    }
-    for (int i = 0; i < n; i++) {
-        array[i] = temp[i];
-    }
-    free(temp);
-	
+
+	for (int i = 0; i < n; i++) {
+		temp[n - 1 - i] = array[i];
+	}
+	for (int i = 0; i < n; i++) {
+		array[i] = temp[i];
+	}
+	free(temp);
+
 }
 
 // moves all tiles in the game to chosen direction
 void move(game_state_t * game, enum movement dir) {
 	int modified = 0;
 	int *modflag = &modified;
-	
+
 	if (dir == DOWN) {
 		for (int i = 0; i < game->x_size; i++) {
 			int temp[game->y_size];
@@ -265,17 +265,17 @@ int set_param(char* str, int* num) {
 	errno = 0;
 	long value = strtol(str, &end, 10);
 	if ((errno == ERANGE && (value == LONG_MAX || value == LONG_MIN))
-            || (errno != 0 && value == 0)) {
-        return 0;
-    }
-    if (end == str) {
-        return 0;
-    }
-    if (value <= 0) {
+			|| (errno != 0 && value == 0)) {
 		return 0;
 	}
-    *num = (int) value;
-    return 1;
+	if (end == str) {
+		return 0;
+	}
+	if (value <= 0) {
+		return 0;
+	}
+	*num = (int) value;
+	return 1;
 }
 
 int process_args(int argc, char** argv, game_state_t * game) {
@@ -322,47 +322,47 @@ int process_args(int argc, char** argv, game_state_t * game) {
 }
 
 int main(int argc, char** argv) {
-    srand(time(NULL));
-    
-    // initialize game options
-    game_state_t * game = malloc(sizeof(game_state_t));
-    game->x_size = 4;
-    game->y_size = 4;
-    game->score = 0;
-    game->moves = 0;
-    game->startnum = 2;
-    game->best = game->startnum;
-    
-    // process command line arguments
-    if (!process_args(argc, argv, game)) {
+	srand(time(NULL));
+
+	// initialize game options
+	game_state_t * game = malloc(sizeof(game_state_t));
+	game->x_size = 4;
+	game->y_size = 4;
+	game->score = 0;
+	game->moves = 0;
+	game->startnum = 2;
+	game->best = game->startnum;
+
+	// process command line arguments
+	if (!process_args(argc, argv, game)) {
 		free(game);
 		return EXIT_FAILURE;
 	}
-    
-    
-    // create main game array
-    game->game_array = create_game_array(game);
-    if (!game->game_array) {
+
+
+	// create main game array
+	game->game_array = create_game_array(game);
+	if (!game->game_array) {
 		return -1;
 	}
-	
-	
+
+
 	// change terminal mode
-    static struct termios old_terminal, new_terminal;
-    tcgetattr(STDIN_FILENO, &old_terminal);
-    new_terminal = old_terminal;
-    new_terminal.c_lflag &= ~(ICANON | ECHO);          
-    tcsetattr(STDIN_FILENO, TCSANOW, &new_terminal);
-    
-    // create two initial tiles
-    create_random_tile(game);
-    create_random_tile(game);
-    print_array(game);
-    
-    // main game loop
-    while (1) {
+	static struct termios old_terminal, new_terminal;
+	tcgetattr(STDIN_FILENO, &old_terminal);
+	new_terminal = old_terminal;
+	new_terminal.c_lflag &= ~(ICANON | ECHO);
+	tcsetattr(STDIN_FILENO, TCSANOW, &new_terminal);
+
+	// create two initial tiles
+	create_random_tile(game);
+	create_random_tile(game);
+	print_array(game);
+
+	// main game loop
+	while (1) {
 		if (is_full(game)) break;
-		
+
 		char key = getchar();
 		switch (key) {
 			case 'w':
@@ -380,19 +380,19 @@ int main(int argc, char** argv) {
 			default:
 				break;
 		}
-		
+
 	}
-	
+
 	printf("\nGAME OVER!\n");
-	
+
 	// free everything
 	for (int j = 0; j < game->y_size; j++) {
 		free(game->game_array[j]);
 	}
-    free(game->game_array);
+	free(game->game_array);
 	free(game);
-	
-    // return terminal back to the previous state
-    tcsetattr(STDIN_FILENO, TCSANOW, &old_terminal);
-    return 0;
+
+	// return terminal back to the previous state
+	tcsetattr(STDIN_FILENO, TCSANOW, &old_terminal);
+	return 0;
 }
