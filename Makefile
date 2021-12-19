@@ -1,5 +1,5 @@
 CC=gcc
-
+CFLAGS=-O2 -std=c99 -Wall -Werror -pedantic
 SOURCES=2048.c
 OBJECTS=$(SOURCES:.c=.o)
 
