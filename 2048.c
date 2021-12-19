@@ -214,7 +214,7 @@ void move(game_state_t * game, enum movement dir) {
 	
 	if (dir == DOWN) {
 		for (int i = 0; i < game->x_size; i++) {
-			int* temp = malloc(game->y_size*sizeof(int));
+			int temp[game->y_size];
 			for (int j = 0; j < game->y_size; j++) {
 				temp[j] = game->game_array[j][i];
 			}
@@ -224,12 +224,11 @@ void move(game_state_t * game, enum movement dir) {
 			for (int j = 0; j < game->y_size; j++) {
 				game->game_array[j][i] = temp[j];
 			}
-			free(temp);
 		}
 	}
 	if (dir == UP) {
 		for (int i = 0; i < game->x_size; i++) {
-			int* temp = malloc(game->y_size*sizeof(int));
+			int temp[game->y_size];
 			for (int j = 0; j < game->y_size; j++) {
 				temp[j] = game->game_array[j][i];
 			}
@@ -237,7 +236,6 @@ void move(game_state_t * game, enum movement dir) {
 			for (int j = 0; j < game->y_size; j++) {
 				game->game_array[j][i] = temp[j];
 			}
-			free(temp);
 		}
 	}
 	if (dir == LEFT) {
@@ -247,13 +245,9 @@ void move(game_state_t * game, enum movement dir) {
 	}
 	if (dir == RIGHT) {
 		for (int j = 0; j < game->y_size; j++) {
-			int* temp = malloc(game->x_size*sizeof(int));
-			temp = memcpy(temp, game->game_array[j], game->x_size*sizeof(int));
-			reverse_array(temp, game->x_size);
-			move_single_array(temp, game->x_size, game, modflag);
-			reverse_array(temp, game->x_size);
-			game->game_array[j] = memcpy(game->game_array[j], temp, game->x_size*sizeof(int));
-			free(temp);
+			reverse_array(game->game_array[j], game->x_size);
+			move_single_array(game->game_array[j], game->x_size, game, modflag);
+			reverse_array(game->game_array[j], game->x_size);
 		}
 	}
 	if (*modflag) {
