@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include "gamestate.h"
-#include "game.h"
 
 void print_top(int x_size) {
 	printf("╔═══════");
