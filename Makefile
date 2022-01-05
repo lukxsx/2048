@@ -1,6 +1,6 @@
 CC=gcc
 CFLAGS=-O2 -std=c99 -Wall -Werror -pedantic
-SOURCES=2048.c textui.c
+SOURCES=main.c game.c textui.c
 OBJECTS=$(SOURCES:.c=.o)
 
 %.o: %.c
