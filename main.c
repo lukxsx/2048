@@ -113,7 +113,7 @@ int main(int argc, char** argv) {
 
 	// main game loop
 	while (1) {
-		if (is_full(game)) break;
+		if (is_array_full(game)) break;
 
 		char key = getchar();
 		switch (key) {

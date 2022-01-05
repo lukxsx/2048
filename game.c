@@ -36,7 +36,7 @@ int is_empty(int** game_array, int x, int y) {
 }
 
 // returns true if the whole array is full (and game is over)
-int is_full(game_state_t * game) {
+int is_array_full(game_state_t * game) {
 	for (int j = 0; j < game->y_size; j++) {
 		for (int i = 0; i < game->x_size; i++) {
 			if (game->game_array[j][i] == 0) return 0;
